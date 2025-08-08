@@ -12,17 +12,27 @@ Perform **INNER**, **LEFT**, **RIGHT**, and **FULL OUTER JOINS** on sample table
 ## 🧩 Dataset Structure
 
 ```plaintext
-📦 employees
-- emp_id (PK)
-- emp_name
-- dept_id (FK)
-
 📦 departments
 - dept_id (PK)
 - dept_name
-```
+- location
 
----
+📦 employees
+- emp_id (PK)
+- emp_name
+- job_title
+- dept_id (FK)
+
+📦 projects
+- project_id (PK)
+- project_name
+- client_name
+- dept_id (FK)
+
+📦 employeeProjects
+- emp_id (FK)
+- project_id (FK)
+```
 
 ## 🧠 SQL Joins Included
 
