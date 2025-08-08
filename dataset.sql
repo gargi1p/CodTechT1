@@ -1,45 +1,58 @@
--- 1. CTE for Total Sales per Category
-WITH category_sales AS (
-    SELECT 
-        p.category,
-        SUM(p.price * o.quantity) AS total_sales
-    FROM orders o
-    JOIN products p ON o.product_id = p.product_id
-    GROUP BY p.category
-)
-SELECT * FROM category_sales;
-
--- 2. Rank Customers by Total Spend
-SELECT 
-    c.name,
-    c.city,
-    SUM(p.price * o.quantity) AS total_spent,
-    RANK() OVER (ORDER BY SUM(p.price * o.quantity) DESC) AS spend_rank
-FROM customers c
-JOIN orders o ON c.customer_id = o.customer_id
-JOIN products p ON o.product_id = p.product_id
-GROUP BY c.customer_id, c.name, c.city;
-
--- 3. Latest Product Purchased by Each Customer
-SELECT 
-    c.name,
-    p.product_name,
-    o.order_date
-FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id
-JOIN products p ON o.product_id = p.product_id
-WHERE o.order_date = (
-    SELECT MAX(o2.order_date)
-    FROM orders o2
-    WHERE o2.customer_id = o.customer_id
+-- Departments Table
+CREATE TABLE Departments (
+    DeptID INT PRIMARY KEY,
+    DeptName VARCHAR(50),
+    Location VARCHAR(50)
 );
 
--- 4. Monthly Sales Trend using Window Functions
-SELECT 
-    DATE_TRUNC('month', order_date) AS month,
-    SUM(p.price * o.quantity) AS monthly_sales,
-    SUM(SUM(p.price * o.quantity)) OVER (ORDER BY DATE_TRUNC('month', order_date)) AS running_total
-FROM orders o
-JOIN products p ON o.product_id = p.product_id
-GROUP BY DATE_TRUNC('month', order_date)
-ORDER BY month;
+-- Employees Table
+CREATE TABLE Employees (
+    EmpID INT PRIMARY KEY,
+    EmpName VARCHAR(50),
+    DeptID INT,
+    JobTitle VARCHAR(50),
+    FOREIGN KEY (DeptID) REFERENCES Departments(DeptID)
+);
+
+-- Projects Table
+CREATE TABLE Projects (
+    ProjectID VARCHAR(10) PRIMARY KEY,
+    ProjectName VARCHAR(100),
+    ClientName VARCHAR(50),
+    DeptID INT,
+    FOREIGN KEY (DeptID) REFERENCES Departments(DeptID)
+);
+
+-- EmployeeProjects Table (Many-to-Many relationship)
+CREATE TABLE EmployeeProjects (
+    EmpID INT,
+    ProjectID VARCHAR(10),
+    PRIMARY KEY (EmpID, ProjectID),
+    FOREIGN KEY (EmpID) REFERENCES Employees(EmpID),
+    FOREIGN KEY (ProjectID) REFERENCES Projects(ProjectID)
+);
+
+
+INSERT INTO Departments (DeptID, DeptName, Location) VALUES
+(1, 'IT', 'Mumbai'),
+(2, 'HR', 'Delhi'),
+(3, 'Finance', 'Bengaluru'),
+(4, 'Marketing', 'Hyderabad');
+
+INSERT INTO Employees (EmpID, EmpName, DeptID, JobTitle) VALUES
+(101, 'Amit', 1, 'Software Eng'),
+(102, 'Priya', 2, 'HR Manager'),
+(103, 'Ravi', 1, 'Data Analyst'),
+(104, 'Kiran', 3, 'Accountant'),
+(105, 'Neha', NULL, 'Consultant');
+
+INSERT INTO Projects (ProjectID, ProjectName, ClientName, DeptID) VALUES
+('P001', 'ERP', 'Infosys', 1),
+('P002', 'Payroll', 'TCS', 3),
+('P003', 'Hiring Drive', 'Wipro', 2),
+('P004', 'Ad Campaign', 'Reliance', 4);
+
+INSERT INTO EmployeeProjects (EmpID, ProjectID) VALUES
+(101, 'P001'),
+(103, 'P001'),
+(104, 'P002');
